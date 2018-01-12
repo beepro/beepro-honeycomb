@@ -1,0 +1,99 @@
+import mongoose from 'mongoose';
+import path from 'path';
+import fs from 'fs-extra';
+import { getModel, create, find, init } from '../honey';
+
+const id = 'beepro-test';
+const clonepath = path.join(process.cwd(), 'workspace', id);
+const gitpath = path.join(clonepath, '.git');
+const helloPath = path.join(gitpath, 'hello.txt');
+
+beforeAll(() => {
+  mongoose.connect(process.env.BEEPRO_MONGO_URL || 'mongodb://localhost:27017', {
+    useMongoClient: true,
+  });
+  mongoose.Promise = global.Promise;
+  fs.removeSync(clonepath);
+  const Model = getModel(mongoose);
+  return Model.findOneAndRemove({
+    id,
+  });
+});
+
+test('get honey model', () => {
+  expect(getModel(mongoose)).toBeDefined();
+});
+
+test('create, find, init, dance', () =>
+  create({
+    mongoose,
+    id,
+    git: {
+      url: 'https://github.com/sideroad/beepro-test.git',
+      branch: 'master',
+      account: 'sideroad',
+      token: process.env.BEEPRO_TEST_TOKEN,
+    },
+  })
+    .then(() =>
+      find({
+        mongoose,
+        id,
+      }))
+    .then((honey) => {
+      expect(honey.id).toBe(id);
+      expect(honey.git.url).toBe('https://github.com/sideroad/beepro-test.git');
+      expect(honey.git.branch).toBe('master');
+      expect(honey.git.account).toBe('sideroad');
+      expect(honey.git.token).toBeDefined();
+    })
+    .then(() =>
+      init({
+        mongoose,
+        id,
+      }))
+    .then(() => {
+      // clone repository
+      expect(fs.existsSync(helloPath)).toBe(false);
+      expect(fs.existsSync(gitpath)).toBe(true);
+      fs.outputFileSync(helloPath, 'hello!');
+      expect(fs.existsSync(helloPath)).toBe(true);
+    })
+    .then(() =>
+      init({
+        mongoose,
+        id,
+      }))
+    .then(({ dance, honey }) => {
+      // do not clone repository again.
+      expect(fs.existsSync(gitpath)).toBe(true);
+      expect(fs.existsSync(helloPath)).toBe(true);
+      return { dance, honey };
+    })
+    .then(({ dance, honey }) => {
+      const relativePath = path.relative(clonepath, helloPath);
+      dance({
+        honey,
+        data: {
+          type: 'change',
+          who: 'sideroad',
+          path: relativePath,
+          change: {
+            from: {
+              row: 0,
+              col: 1,
+            },
+            to: {
+              row: 0,
+              col: 2,
+            },
+            text: 'foobar',
+          },
+        },
+      });
+      expect(fs.readFileSync(helloPath, 'utf8')).toBe('hfoobarllo!');
+    }));
+
+afterAll(() => {
+  mongoose.disconnect();
+});

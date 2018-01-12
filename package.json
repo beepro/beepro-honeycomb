@@ -1,0 +1,42 @@
+{
+  "name": "beepro-honeycomb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/server.js",
+  "scripts": {
+    "test": "jest",
+    "build": "babel --ignore __test__ src -d lib",
+    "start": "rm -Rf lib && npm run build && node lib/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beepro/beepro-honeycomb.git"
+  },
+  "author": "sideroad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/beepro/beepro-honeycomb/issues"
+  },
+  "homepage": "https://github.com/beepro/beepro-honeycomb#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "compression": "^1.7.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "express-ws": "^3.0.0",
+    "fs-extra": "^5.0.0",
+    "git-promise": "^0.3.1",
+    "mongoose": "^4.13.9",
+    "waggle-dance": "^1.0.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.15.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jest": "^21.6.1",
+    "jest": "^22.0.4"
+  }
+}
