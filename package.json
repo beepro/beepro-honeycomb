@@ -27,7 +27,7 @@
     "fs-extra": "^5.0.0",
     "git-promise": "^0.3.1",
     "mongoose": "^4.13.9",
-    "waggle-dance": "^1.0.2"
+    "waggle-dance": "^1.0.6"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
