@@ -16,6 +16,9 @@ export function getModel(mongoose) {
         account: String,
         token: String,
       },
+      commit: {
+        message: String,
+      },
     });
   }
   return model;
@@ -30,6 +33,9 @@ export function create({
     account,
     token,
   },
+  commit: {
+    message = 'beepro making commit',
+  },
 }) {
   const Model = getModel(mongoose);
   return new Model({
@@ -39,6 +45,9 @@ export function create({
       branch,
       account,
       token,
+    },
+    commit: {
+      message,
     },
   }).save();
 }
@@ -58,12 +67,22 @@ export function dance({
   data: {
     path: relativePath,
     type,
+    contents,
     change,
   },
 }) {
   return new Promise((resolve) => {
+    let file;
+    if (relativePath) {
+      file = path.join(honey.path, relativePath);
+    }
+    if (type === 'create') {
+      fs.writeFileSync(file, contents, 'utf8');
+    }
+    if (type === 'delete') {
+      fs.removeSync(file);
+    }
     if (type === 'change') {
-      const file = path.join(honey.path, relativePath);
       const origin = fs.readFileSync(file, 'utf8');
       fs.writeFileSync(file, waggleDance.apply(origin, change), 'utf8');
     }

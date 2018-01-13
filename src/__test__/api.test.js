@@ -8,6 +8,9 @@ test('issue ID', () => {
       account: '',
       token: '',
     },
+    commit: {
+      message: 'beepro making commit',
+    },
   })).toHaveLength(64);
 });
 
@@ -17,6 +20,9 @@ test('validate', () => {
       url: 'aaa',
       account: 'bbb',
       token: 'ccc',
+    },
+    commit: {
+      message: 'beepro making commit',
     },
   };
   expect(validate({})).toBe(false);

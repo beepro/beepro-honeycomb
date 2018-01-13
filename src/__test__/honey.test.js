@@ -34,6 +34,9 @@ test('create, find, init, dance', () =>
       account: 'sideroad',
       token: process.env.BEEPRO_TEST_TOKEN,
     },
+    commit: {
+      message: 'beepro making commit',
+    },
   })
     .then(() =>
       find({
@@ -46,6 +49,7 @@ test('create, find, init, dance', () =>
       expect(honey.git.branch).toBe('master');
       expect(honey.git.account).toBe('sideroad');
       expect(honey.git.token).toBeDefined();
+      expect(honey.commit.message).toBe('beepro making commit');
     })
     .then(() =>
       init({
@@ -92,6 +96,25 @@ test('create, find, init, dance', () =>
         },
       });
       expect(fs.readFileSync(helloPath, 'utf8')).toBe('hfoobarllo!');
+      dance({
+        honey,
+        data: {
+          type: 'create',
+          who: 'sideroad',
+          path: relativePath,
+          contents: 'aaa\nbbb',
+        },
+      });
+      expect(fs.readFileSync(helloPath, 'utf8')).toBe('aaa\nbbb');
+      dance({
+        honey,
+        data: {
+          type: 'delete',
+          who: 'sideroad',
+          path: relativePath,
+        },
+      });
+      expect(fs.existsSync(helloPath)).toBe(false);
     }));
 
 afterAll(() => {

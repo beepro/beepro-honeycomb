@@ -57,7 +57,14 @@ export default function (app, mongoose) {
       id: req.params.id,
     }).then((honey) => {
       if (honey) {
-        res.json(honey);
+        res.json({
+          id: honey.id,
+          git: {
+            url: honey.git.url,
+            branch: honey.git.branch,
+            account: honey.git.account,
+          },
+        });
       } else {
         res.status(404).json({});
       }
