@@ -44,9 +44,11 @@ export default function (app, mongoose) {
       mongoose,
       id,
       ...req.body,
-    }).then(() => {
+    }).then(({ dance: { url } }) => {
       res.json({
-        url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
+        dance: {
+          url,
+        },
       });
     });
   });
@@ -63,6 +65,9 @@ export default function (app, mongoose) {
             url: honey.git.url,
             branch: honey.git.branch,
             account: honey.git.account,
+          },
+          dance: {
+            url: honey.dance.url,
           },
         });
       } else {

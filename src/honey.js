@@ -22,6 +22,9 @@ export function getModel(mongoose) {
         message: String,
         interval: Number,
       },
+      dance: {
+        url: String,
+      },
     });
   }
   return model;
@@ -38,7 +41,7 @@ export function create({
   },
   commit: {
     message = 'beepro making commit',
-    interval = 60000,
+    interval = 1,
   },
 }) {
   const Model = getModel(mongoose);
@@ -53,6 +56,9 @@ export function create({
     commit: {
       message,
       interval,
+    },
+    dance: {
+      url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
     },
   }).save();
 }
@@ -103,7 +109,7 @@ export function changeUpstream(honey, options) {
       git('push origin', options));
 }
 
-export function cloneFromUpstream(honey, honeyPath, options) {
+export function cloneFromUpstream(honey) {
   const {
     protocol,
     host,
@@ -116,11 +122,18 @@ export function cloneFromUpstream(honey, honeyPath, options) {
   console.log(`git ${cmd}`);
   return git(cmd, { cwd: workspacePath })
     .then(() =>
-      git(`config --local user.name ${honey.git.account}`, options))
-    .then(() => ({
-      ...honey,
-      path: honeyPath,
-    }));
+      git(`config --local user.name ${honey.git.account}`, { cwd: honey.path }))
+    .then(() => (honey));
+}
+
+export function makeRC(honey) {
+  const config = {
+    dance: {
+      url: honey.dance.url,
+    },
+  };
+  fs.writeFileSync(path.join(honey.path, '.beerc'), JSON.stringify(config), 'utf8');
+  return changeUpstream(honey, { cwd: honey.path });
 }
 
 export function init({ id, mongoose }) {
@@ -129,21 +142,24 @@ export function init({ id, mongoose }) {
       mongoose,
       id,
     })
+      .then(honey =>
+        ({
+          ...honey,
+          path: path.join(__dirname, '../workspace', honey.id),
+        }))
       .then((honey) => {
-        const honeyPath = path.join(__dirname, '../workspace', honey.id);
-        if (fs.existsSync(honeyPath)) {
-          return {
-            ...honey,
-            path: honeyPath,
-          };
+        if (fs.existsSync(honey.path)) {
+          return honey;
         }
-        return cloneFromUpstream(honey, honeyPath, { cwd: honeyPath });
+        return cloneFromUpstream(honey)
+          .then(() =>
+            makeRC(honey));
       })
       .then((honey) => {
         if (!committer[honey.id]) {
           committer[honey.id] = setInterval(() => {
             changeUpstream(honey, { cwd: honey.path });
-          }, honey.interval);
+          }, honey.interval * 60000);
         }
         resolve({
           honey,

@@ -20,7 +20,7 @@ const inputs = {
     },
     commit: {
       message: 'beepro making commit',
-      interval: 60000,
+      interval: 1,
     },
   },
 };
@@ -42,24 +42,27 @@ test('get honey model', () => {
 });
 
 test('cloneFromUpstream, changeUpstream', () =>
-  cloneFromUpstream(inputs.valid, clonePath, { cwd: workspacePath })
+  cloneFromUpstream(inputs.valid)
     .then(() => {
       expect(fs.existsSync(gitPath)).toBe(true);
       fs.writeFileSync(path.join(clonePath, 'foo-bar.txt'), Math.random(), 'utf8');
     })
     .then(() =>
-      changeUpstream(inputs.valid, { cwd: clonePath })));
+      changeUpstream(inputs.valid)));
 
 test('create, find, init, dance', () =>
   create({
     mongoose,
     ...inputs.valid,
   })
-    .then(() =>
-      find({
+    .then((honey) => {
+      expect(honey.id).toBe(id);
+      expect(honey.dance.url).toBe('wss://honeycomb-v1.herokuapp.com/ws/honeys/beepro-test');
+      return find({
         mongoose,
         id,
-      }))
+      });
+    })
     .then((honey) => {
       expect(honey.id).toBe(id);
       expect(honey.git.url).toBe('https://github.com/beepro/beepro-test-repository.git');
@@ -67,7 +70,7 @@ test('create, find, init, dance', () =>
       expect(honey.git.account).toBe('sideroad');
       expect(honey.git.token).toBeDefined();
       expect(honey.commit.message).toBe('beepro making commit');
-      expect(honey.commit.interval).toBe(60000);
+      expect(honey.commit.interval).toBe(1);
     })
     .then(() =>
       init({

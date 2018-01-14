@@ -10,7 +10,7 @@ test('issue ID', () => {
     },
     commit: {
       message: 'beepro making commit',
-      interval: 60000,
+      interval: 1,
     },
   })).toHaveLength(64);
 });
@@ -24,7 +24,7 @@ test('validate', () => {
     },
     commit: {
       message: 'beepro making commit',
-      interval: 60000,
+      interval: 1,
     },
   };
   expect(validate({})).toBe(false);
