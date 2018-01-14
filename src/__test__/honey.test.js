@@ -3,16 +3,17 @@ import path from 'path';
 import fs from 'fs-extra';
 import { getModel, create, find, init, cloneFromUpstream, changeUpstream } from '../honey';
 
+jest.setTimeout(10000);
 const id = 'beepro-test';
 const workspacePath = path.join(process.cwd(), 'workspace');
-const clonepath = path.join(process.cwd(), 'workspace', id);
-const gitpath = path.join(clonepath, '.git');
-const helloPath = path.join(gitpath, 'hello.txt');
+const clonePath = path.join(process.cwd(), 'workspace', id);
+const gitPath = path.join(clonePath, '.git');
+const helloPath = path.join(gitPath, 'hello.txt');
 const inputs = {
   valid: {
     id,
     git: {
-      url: 'https://github.com/sideroad/beepro-test.git',
+      url: 'https://github.com/beepro/beepro-test-repository.git',
       branch: 'master',
       account: 'sideroad',
       token: process.env.BEEPRO_TEST_TOKEN,
@@ -29,7 +30,7 @@ beforeAll(() => {
     useMongoClient: true,
   });
   mongoose.Promise = global.Promise;
-  fs.removeSync(clonepath);
+  fs.removeSync(clonePath);
   const Model = getModel(mongoose);
   return Model.findOneAndRemove({
     id,
@@ -41,13 +42,13 @@ test('get honey model', () => {
 });
 
 test('cloneFromUpstream, changeUpstream', () =>
-  cloneFromUpstream(inputs.valid, clonepath, { cwd: workspacePath })
+  cloneFromUpstream(inputs.valid, clonePath, { cwd: workspacePath })
     .then(() => {
-      expect(fs.existsSync(gitpath)).toBe(true);
-      fs.writeFileSync(path.join(clonepath, 'foo-bar.txt'), Math.random(), 'utf8');
+      expect(fs.existsSync(gitPath)).toBe(true);
+      fs.writeFileSync(path.join(clonePath, 'foo-bar.txt'), Math.random(), 'utf8');
     })
     .then(() =>
-      changeUpstream()));
+      changeUpstream(inputs.valid, { cwd: clonePath })));
 
 test('create, find, init, dance', () =>
   create({
@@ -61,7 +62,7 @@ test('create, find, init, dance', () =>
       }))
     .then((honey) => {
       expect(honey.id).toBe(id);
-      expect(honey.git.url).toBe('https://github.com/sideroad/beepro-test.git');
+      expect(honey.git.url).toBe('https://github.com/beepro/beepro-test-repository.git');
       expect(honey.git.branch).toBe('master');
       expect(honey.git.account).toBe('sideroad');
       expect(honey.git.token).toBeDefined();
@@ -76,7 +77,7 @@ test('create, find, init, dance', () =>
     .then(() => {
       // clone repository
       expect(fs.existsSync(helloPath)).toBe(false);
-      expect(fs.existsSync(gitpath)).toBe(true);
+      expect(fs.existsSync(gitPath)).toBe(true);
       fs.outputFileSync(helloPath, 'hello!');
       expect(fs.existsSync(helloPath)).toBe(true);
     })
@@ -87,12 +88,12 @@ test('create, find, init, dance', () =>
       }))
     .then(({ dance, honey }) => {
       // do not clone repository again.
-      expect(fs.existsSync(gitpath)).toBe(true);
+      expect(fs.existsSync(gitPath)).toBe(true);
       expect(fs.existsSync(helloPath)).toBe(true);
       return { dance, honey };
     })
     .then(({ dance, honey }) => {
-      const relativePath = path.relative(clonepath, helloPath);
+      const relativePath = path.relative(clonePath, helloPath);
       dance({
         honey,
         data: {

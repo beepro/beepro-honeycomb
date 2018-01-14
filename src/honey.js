@@ -98,9 +98,9 @@ export function dance({
 export function changeUpstream(honey, options) {
   return git('add .', options)
     .then(() =>
-      git(`commit -m ${honey.commit.message}`))
+      git(`commit -m "${honey.commit.message}"`, options))
     .then(() =>
-      git('push origin'));
+      git('push origin', options));
 }
 
 export function cloneFromUpstream(honey, honeyPath, options) {
