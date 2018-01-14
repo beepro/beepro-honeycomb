@@ -102,6 +102,8 @@ export function dance({
 }
 
 export function changeUpstream(honey, options) {
+  // eslint-disable-next-line no-console
+  console.log('change upstream', honey.path, options);
   return git('add .', options)
     .then(() =>
       git(`commit -m "${honey.commit.message}"`, options))
