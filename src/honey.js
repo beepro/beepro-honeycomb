@@ -60,7 +60,7 @@ export function create({
     dance: {
       url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
     },
-  }).save();
+  }).save().then(doc => doc.toObject());
 }
 
 export function find({
@@ -70,7 +70,7 @@ export function find({
   const Model = getModel(mongoose);
   return Model.findOne({
     id,
-  });
+  }).then(doc => doc.toObject());
 }
 
 export function dance({
@@ -101,14 +101,15 @@ export function dance({
   });
 }
 
-export function changeUpstream(honey, options) {
+export function changeUpstream(honey) {
   // eslint-disable-next-line no-console
-  console.log('change upstream', honey.path, options);
-  return git('add .', options)
+  console.log(`change upstream on ${honey.path}`);
+  return git('add .', { cwd: honey.path })
     .then(() =>
-      git(`commit -m "${honey.commit.message}"`, options))
+      git(`commit -m "${honey.commit.message}"`, { cwd: honey.path }))
     .then(() =>
-      git('push origin', options));
+      git('push origin', { cwd: honey.path }))
+    .then(() => honey, () => honey);
 }
 
 export function cloneFromUpstream(honey) {
@@ -121,52 +122,58 @@ export function cloneFromUpstream(honey) {
   } = url.parse(honey.git.url);
   const cmd = `clone ${protocol}//${honey.git.account}:${honey.git.token}@${host}${pathname}${search || ''}${hash || ''} ${honey.id}`;
   // eslint-disable-next-line no-console
-  console.log(`git ${cmd}`);
+  console.log(`git ${cmd} on ${workspacePath}`);
   return git(cmd, { cwd: workspacePath })
     .then(() =>
       git(`config --local user.name ${honey.git.account}`, { cwd: honey.path }))
-    .then(() => (honey));
+    .then(() => honey);
 }
 
-export function makeRC(honey) {
-  const config = {
+export function getRC(honey) {
+  return {
     dance: {
       url: honey.dance.url,
     },
   };
-  fs.writeFileSync(path.join(honey.path, '.beerc'), JSON.stringify(config), 'utf8');
-  return changeUpstream(honey, { cwd: honey.path });
+}
+
+export function makeRC(honey) {
+  // eslint-disable-next-line no-console
+  console.log(`generate .beerc on ${honey.path}`);
+  fs.writeFileSync(path.join(honey.path, '.beerc'), JSON.stringify(getRC(honey)), 'utf8');
+  return changeUpstream(honey);
 }
 
 export function init({ id, mongoose }) {
-  return new Promise((resolve) => {
-    find({
-      mongoose,
-      id,
+  return find({
+    mongoose,
+    id,
+  })
+    .then(honey =>
+      ({
+        ...honey,
+        path: path.join(__dirname, '../workspace', honey.id),
+      }))
+    .then((honey) => {
+      if (fs.existsSync(honey.path)) {
+        return honey;
+      }
+      return cloneFromUpstream(honey)
+        .then(() =>
+          makeRC(honey));
     })
-      .then(honey =>
-        ({
+    .then((honey) => {
+      if (!committer[honey.id]) {
+        committer[honey.id] = setInterval(() => {
+          changeUpstream(honey);
+        }, honey.interval * 60000);
+      }
+      return ({
+        honey: {
           ...honey,
-          path: path.join(__dirname, '../workspace', honey.id),
-        }))
-      .then((honey) => {
-        if (fs.existsSync(honey.path)) {
-          return honey;
-        }
-        return cloneFromUpstream(honey)
-          .then(() =>
-            makeRC(honey));
-      })
-      .then((honey) => {
-        if (!committer[honey.id]) {
-          committer[honey.id] = setInterval(() => {
-            changeUpstream(honey, { cwd: honey.path });
-          }, honey.interval * 60000);
-        }
-        resolve({
-          honey,
-          dance,
-        });
+          rc: getRC(honey),
+        },
+        dance,
       });
-  });
+    });
 }

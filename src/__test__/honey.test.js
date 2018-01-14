@@ -1,13 +1,21 @@
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs-extra';
-import { getModel, create, find, init, cloneFromUpstream, changeUpstream } from '../honey';
+import {
+  getModel,
+  create,
+  find,
+  init,
+  cloneFromUpstream,
+  changeUpstream,
+  makeRC,
+} from '../honey';
 
 jest.setTimeout(10000);
 const id = 'beepro-test';
-const clonePath = path.join(process.cwd(), 'workspace', id);
-const gitPath = path.join(clonePath, '.git');
-const helloPath = path.join(gitPath, 'hello.txt');
+const honeyPath = path.join(process.cwd(), 'workspace', id);
+const gitPath = path.join(honeyPath, '.git');
+const helloPath = path.join(honeyPath, 'hello.txt');
 const inputs = {
   valid: {
     id,
@@ -21,7 +29,15 @@ const inputs = {
       message: 'beepro making commit',
       interval: 1,
     },
-    path: clonePath,
+    path: honeyPath,
+  },
+};
+const honeys = {
+  valid: {
+    ...inputs.valid,
+    dance: {
+      url: 'wss://honeycomb-v1.herokuapp.com/ws/honeys/beepro-test',
+    },
   },
 };
 
@@ -30,7 +46,10 @@ beforeAll(() => {
     useMongoClient: true,
   });
   mongoose.Promise = global.Promise;
-  fs.removeSync(clonePath);
+});
+
+beforeEach(() => {
+  fs.removeSync(honeyPath);
   const Model = getModel(mongoose);
   return Model.findOneAndRemove({
     id,
@@ -41,14 +60,19 @@ test('get honey model', () => {
   expect(getModel(mongoose)).toBeDefined();
 });
 
-test('cloneFromUpstream, changeUpstream', () =>
-  cloneFromUpstream(inputs.valid)
+test('cloneFromUpstream, changeUpstream, makeRC', () =>
+  cloneFromUpstream(honeys.valid)
     .then(() => {
       expect(fs.existsSync(gitPath)).toBe(true);
-      fs.writeFileSync(path.join(clonePath, 'foo-bar.txt'), Math.random(), 'utf8');
+      fs.writeFileSync(path.join(honeyPath, 'foo-bar.txt'), Math.random(), 'utf8');
     })
     .then(() =>
-      changeUpstream(inputs.valid)));
+      changeUpstream(honeys.valid))
+    .then(() =>
+      makeRC(honeys.valid))
+    .then(() => {
+      expect(fs.existsSync(path.join(honeyPath, '.beerc'))).toBe(true);
+    }));
 
 test('create, find, init, dance', () =>
   create({
@@ -57,7 +81,7 @@ test('create, find, init, dance', () =>
   })
     .then((honey) => {
       expect(honey.id).toBe(id);
-      expect(honey.dance.url).toBe('wss://honeycomb-v1.herokuapp.com/ws/honeys/beepro-test');
+      expect(honey.dance.url).toBe(honeys.valid.dance.url);
       return find({
         mongoose,
         id,
@@ -96,7 +120,7 @@ test('create, find, init, dance', () =>
       return { dance, honey };
     })
     .then(({ dance, honey }) => {
-      const relativePath = path.relative(clonePath, helloPath);
+      const relativePath = path.relative(honeyPath, helloPath);
       dance({
         honey,
         data: {
