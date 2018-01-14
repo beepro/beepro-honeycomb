@@ -1,12 +1,28 @@
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs-extra';
-import { getModel, create, find, init } from '../honey';
+import { getModel, create, find, init, cloneFromUpstream, changeUpstream } from '../honey';
 
 const id = 'beepro-test';
+const workspacePath = path.join(process.cwd(), 'workspace');
 const clonepath = path.join(process.cwd(), 'workspace', id);
 const gitpath = path.join(clonepath, '.git');
 const helloPath = path.join(gitpath, 'hello.txt');
+const inputs = {
+  valid: {
+    id,
+    git: {
+      url: 'https://github.com/sideroad/beepro-test.git',
+      branch: 'master',
+      account: 'sideroad',
+      token: process.env.BEEPRO_TEST_TOKEN,
+    },
+    commit: {
+      message: 'beepro making commit',
+      interval: 60000,
+    },
+  },
+};
 
 beforeAll(() => {
   mongoose.connect(process.env.BEEPRO_MONGO_URL || 'mongodb://localhost:27017', {
@@ -24,19 +40,19 @@ test('get honey model', () => {
   expect(getModel(mongoose)).toBeDefined();
 });
 
+test('cloneFromUpstream, changeUpstream', () =>
+  cloneFromUpstream(inputs.valid, clonepath, { cwd: workspacePath })
+    .then(() => {
+      expect(fs.existsSync(gitpath)).toBe(true);
+      fs.writeFileSync(path.join(clonepath, 'foo-bar.txt'), Math.random(), 'utf8');
+    })
+    .then(() =>
+      changeUpstream()));
+
 test('create, find, init, dance', () =>
   create({
     mongoose,
-    id,
-    git: {
-      url: 'https://github.com/sideroad/beepro-test.git',
-      branch: 'master',
-      account: 'sideroad',
-      token: process.env.BEEPRO_TEST_TOKEN,
-    },
-    commit: {
-      message: 'beepro making commit',
-    },
+    ...inputs.valid,
   })
     .then(() =>
       find({
@@ -50,6 +66,7 @@ test('create, find, init, dance', () =>
       expect(honey.git.account).toBe('sideroad');
       expect(honey.git.token).toBeDefined();
       expect(honey.commit.message).toBe('beepro making commit');
+      expect(honey.commit.interval).toBe(60000);
     })
     .then(() =>
       init({

@@ -5,6 +5,8 @@ import path from 'path';
 import url from 'url';
 
 let model;
+const committer = {};
+const workspacePath = path.join(process.cwd(), 'workspace');
 
 export function getModel(mongoose) {
   if (!model) {
@@ -18,6 +20,7 @@ export function getModel(mongoose) {
       },
       commit: {
         message: String,
+        interval: Number,
       },
     });
   }
@@ -35,6 +38,7 @@ export function create({
   },
   commit: {
     message = 'beepro making commit',
+    interval = 60000,
   },
 }) {
   const Model = getModel(mongoose);
@@ -48,6 +52,7 @@ export function create({
     },
     commit: {
       message,
+      interval,
     },
   }).save();
 }
@@ -90,6 +95,34 @@ export function dance({
   });
 }
 
+export function changeUpstream(honey, options) {
+  return git('add .', options)
+    .then(() =>
+      git(`commit -m ${honey.commit.message}`))
+    .then(() =>
+      git('push origin'));
+}
+
+export function cloneFromUpstream(honey, honeyPath, options) {
+  const {
+    protocol,
+    host,
+    pathname,
+    search,
+    hash,
+  } = url.parse(honey.git.url);
+  const cmd = `clone ${protocol}//${honey.git.account}:${honey.git.token}@${host}${pathname}${search || ''}${hash || ''} ${honey.id}`;
+  // eslint-disable-next-line no-console
+  console.log(`git ${cmd}`);
+  return git(cmd, { cwd: workspacePath })
+    .then(() =>
+      git(`config --local user.name ${honey.git.account}`, options))
+    .then(() => ({
+      ...honey,
+      path: honeyPath,
+    }));
+}
+
 export function init({ id, mongoose }) {
   return new Promise((resolve) => {
     find({
@@ -104,27 +137,14 @@ export function init({ id, mongoose }) {
             path: honeyPath,
           };
         }
-        fs.mkdirSync(honeyPath);
-        const {
-          protocol,
-          host,
-          pathname,
-          search,
-          hash,
-        } = url.parse(honey.git.url);
-        const cmd = `clone ${protocol}//${honey.git.account}:${honey.git.token}@${host}${pathname}${search || ''}${hash || ''} ${honey.id}`;
-        // eslint-disable-next-line no-console
-        console.log(`git ${cmd}`);
-        const workspacePath = path.join(process.cwd(), 'workspace');
-        return git(cmd, { cwd: workspacePath })
-          .then(() =>
-            git(`config --local user.name ${honey.git.account}`, { cwd: honeyPath }))
-          .then(() => ({
-            ...honey,
-            path: honeyPath,
-          }));
+        return cloneFromUpstream(honey, honeyPath, { cwd: honeyPath });
       })
       .then((honey) => {
+        if (!committer[honey.id]) {
+          committer[honey.id] = setInterval(() => {
+            changeUpstream(honey, { cwd: honey.path });
+          }, honey.interval);
+        }
         resolve({
           honey,
           dance,
