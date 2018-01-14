@@ -5,7 +5,6 @@ import { getModel, create, find, init, cloneFromUpstream, changeUpstream } from 
 
 jest.setTimeout(10000);
 const id = 'beepro-test';
-const workspacePath = path.join(process.cwd(), 'workspace');
 const clonePath = path.join(process.cwd(), 'workspace', id);
 const gitPath = path.join(clonePath, '.git');
 const helloPath = path.join(gitPath, 'hello.txt');
@@ -22,6 +21,7 @@ const inputs = {
       message: 'beepro making commit',
       interval: 1,
     },
+    path: clonePath,
   },
 };
 
