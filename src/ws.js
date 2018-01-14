@@ -1,4 +1,3 @@
-import path from 'path';
 import { init } from './honey';
 
 export default function (app, mongoose) {
@@ -36,13 +35,12 @@ export default function (app, mongoose) {
             multicast(clients, msg, ws.id);
           });
       });
-      const workspacePath = path.join(process.cwd(), 'workspace');
       dance({
         honey,
         data: {
           type: 'create',
           who: 'beepro',
-          path: path.relative(workspacePath, path.join(honey.path, '.beerc')),
+          path: '.beerc',
           contents: honey.rc,
         },
       });
