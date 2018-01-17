@@ -6,6 +6,7 @@ test('issue ID', () => {
       url: '',
       branch: 'master',
       account: '',
+      emal: '',
       token: '',
     },
     commit: {
@@ -20,6 +21,7 @@ test('validate', () => {
     git: {
       url: 'aaa',
       account: 'bbb',
+      email: 'ddd',
       token: 'ccc',
     },
     commit: {
@@ -35,6 +37,10 @@ test('validate', () => {
   expect(validate({
     ...valid,
     git: { account: '' },
+  })).toBe(false);
+  expect(validate({
+    ...valid,
+    git: { email: '' },
   })).toBe(false);
   expect(validate({
     ...valid,

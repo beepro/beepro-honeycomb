@@ -16,6 +16,7 @@ export function getModel(mongoose) {
         url: String,
         branch: String,
         account: String,
+        email: String,
         token: String,
       },
       commit: {
@@ -37,6 +38,7 @@ export function create({
     url: gitUrl,
     branch,
     account,
+    email,
     token,
   },
   commit: {
@@ -51,6 +53,7 @@ export function create({
       url: gitUrl,
       branch,
       account,
+      email,
       token,
     },
     commit: {
@@ -126,6 +129,8 @@ export function cloneFromUpstream(honey) {
   return git(cmd, { cwd: workspacePath })
     .then(() =>
       git(`config --local user.name ${honey.git.account}`, { cwd: honey.path }))
+    .then(() =>
+      git(`config --local user.email ${honey.git.email}`, { cwd: honey.path }))
     .then(() => honey);
 }
 
