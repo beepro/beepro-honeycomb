@@ -22,9 +22,9 @@ const inputs = {
     git: {
       url: 'https://github.com/beepro/beepro-test-repository.git',
       branch: 'master',
-      account: 'beepro-honeycomb',
-      email: 'beepro.honeycomb@gmail.com',
-      token: process.env.BEEPRO_TEST_TOKEN,
+      account: 'beepro-nabee',
+      email: 'beepro.nabee@gmail.com',
+      token: process.env.BEEPRO_TOKEN,
     },
     commit: {
       message: 'beepro making commit',
@@ -92,10 +92,7 @@ test('create, find, init, dance', () =>
       expect(honey.id).toBe(id);
       expect(honey.git.url).toBe('https://github.com/beepro/beepro-test-repository.git');
       expect(honey.git.branch).toBe('master');
-      expect(honey.git.account).toBe('beepro-honeycomb');
-      expect(honey.git.email).toBe('beepro.honeycomb@gmail.com');
-      expect(honey.git.token).toBeDefined();
-      expect(honey.commit.message).toBe('beepro making commit');
+      expect(honey.commit.message).toBe('buzz buzz buzz');
       expect(honey.commit.interval).toBe(1);
     })
     .then(() =>
@@ -127,7 +124,7 @@ test('create, find, init, dance', () =>
         honey,
         data: {
           type: 'change',
-          who: 'beepro-honeycomb',
+          who: 'beepro-nabee',
           path: relativePath,
           change: {
             from: {
@@ -147,7 +144,7 @@ test('create, find, init, dance', () =>
         honey,
         data: {
           type: 'create',
-          who: 'beepro-honeycomb',
+          who: 'beepro-nabee',
           path: relativePath,
           contents: 'aaa\nbbb',
         },
@@ -157,7 +154,7 @@ test('create, find, init, dance', () =>
         honey,
         data: {
           type: 'delete',
-          who: 'beepro-honeycomb',
+          who: 'beepro-nabee',
           path: relativePath,
         },
       });

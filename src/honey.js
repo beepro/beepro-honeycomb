@@ -7,6 +7,11 @@ import url from 'url';
 let model;
 const committer = {};
 const workspacePath = path.join(process.cwd(), 'workspace');
+const nabee = {
+  account: 'beepro-nabee',
+  email: 'beepro.nabee@gmail.com',
+  token: process.env.BEEPRO_TOKEN,
+};
 
 export function getModel(mongoose) {
   if (!model) {
@@ -15,9 +20,6 @@ export function getModel(mongoose) {
       git: {
         url: String,
         branch: String,
-        account: String,
-        email: String,
-        token: String,
       },
       commit: {
         message: String,
@@ -37,12 +39,9 @@ export function create({
   git: {
     url: gitUrl,
     branch,
-    account,
-    email,
-    token,
   },
   commit: {
-    message = 'beepro making commit',
+    message = 'buzz buzz buzz',
     interval = 1,
   },
 }) {
@@ -52,9 +51,6 @@ export function create({
     git: {
       url: gitUrl,
       branch,
-      account,
-      email,
-      token,
     },
     commit: {
       message,
@@ -123,14 +119,14 @@ export function cloneFromUpstream(honey) {
     search,
     hash,
   } = url.parse(honey.git.url);
-  const cmd = `clone ${protocol}//${honey.git.account}:${honey.git.token}@${host}${pathname}${search || ''}${hash || ''} ${honey.id}`;
+  const cmd = `clone ${protocol}//${nabee.account}:${nabee.token}@${host}${pathname}${search || ''}${hash || ''} ${honey.id}`;
   // eslint-disable-next-line no-console
   console.log(`git ${cmd} on ${workspacePath}`);
   return git(cmd, { cwd: workspacePath })
     .then(() =>
-      git(`config --local user.name ${honey.git.account}`, { cwd: honey.path }))
+      git(`config --local user.name ${nabee.account}`, { cwd: honey.path }))
     .then(() =>
-      git(`config --local user.email ${honey.git.email}`, { cwd: honey.path }))
+      git(`config --local user.email ${nabee.email}`, { cwd: honey.path }))
     .then(() => honey);
 }
 

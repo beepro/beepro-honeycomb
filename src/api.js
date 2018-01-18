@@ -9,10 +9,7 @@ if (!SECRET) {
 
 export function validate({ git = {} }) {
   if (
-    !git.url ||
-    !git.account ||
-    !git.email ||
-    !git.token
+    !git.url
   ) {
     return false;
   }
@@ -65,8 +62,6 @@ export default function (app, mongoose) {
           git: {
             url: honey.git.url,
             branch: honey.git.branch,
-            account: honey.git.account,
-            email: honey.git.email,
           },
           dance: {
             url: honey.dance.url,
