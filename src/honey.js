@@ -39,11 +39,11 @@ export function create({
   git: {
     url: gitUrl,
     branch,
-  },
+  } = {},
   commit: {
     message = 'buzz buzz buzz',
     interval = 1,
-  },
+  } = {},
 }) {
   const Model = getModel(mongoose);
   return new Model({

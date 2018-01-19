@@ -26,10 +26,6 @@ const inputs = {
       email: 'beepro.nabee@gmail.com',
       token: process.env.BEEPRO_TOKEN,
     },
-    commit: {
-      message: 'beepro making commit',
-      interval: 1,
-    },
     path: honeyPath,
   },
 };
