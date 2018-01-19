@@ -10,6 +10,7 @@ import {
   changeUpstream,
   makeRC,
 } from '../honey';
+import util from './util';
 
 jest.setTimeout(10000);
 const id = 'beepro-test';
@@ -32,26 +33,21 @@ const inputs = {
 const honeys = {
   valid: {
     ...inputs.valid,
+    commit: {
+      message: 'buzz buzz buzz',
+      interval: 1,
+    },
     dance: {
       url: 'wss://honeycomb-v1.herokuapp.com/ws/honeys/beepro-test',
     },
   },
 };
 
-beforeAll(() => {
-  mongoose.connect(process.env.BEEPRO_MONGO_URL || 'mongodb://localhost:27017', {
-    useMongoClient: true,
-  });
-  mongoose.Promise = global.Promise;
-});
+beforeAll(() =>
+  util.init());
 
-beforeEach(() => {
-  fs.removeSync(honeyPath);
-  const Model = getModel(mongoose);
-  return Model.findOneAndRemove({
-    id,
-  });
-});
+beforeEach(() =>
+  util.clean());
 
 test('get honey model', () => {
   expect(getModel(mongoose)).toBeDefined();
@@ -88,8 +84,6 @@ test('create, find, init, dance', () =>
       expect(honey.id).toBe(id);
       expect(honey.git.url).toBe('https://github.com/beepro/beepro-test-repository.git');
       expect(honey.git.branch).toBe('master');
-      expect(honey.commit.message).toBe('buzz buzz buzz');
-      expect(honey.commit.interval).toBe(1);
     })
     .then(() =>
       init({
@@ -157,6 +151,5 @@ test('create, find, init, dance', () =>
       expect(fs.existsSync(helloPath)).toBe(false);
     }));
 
-afterAll(() => {
-  mongoose.disconnect();
-});
+afterAll(() =>
+  util.clean());

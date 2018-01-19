@@ -41,8 +41,8 @@ export function create({
     branch,
   } = {},
   commit: {
-    message = 'buzz buzz buzz',
-    interval = 1,
+    message,
+    interval,
   } = {},
 }) {
   const Model = getModel(mongoose);
@@ -105,10 +105,10 @@ export function changeUpstream(honey) {
   console.log(`change upstream on ${honey.path}`);
   return git('add .', { cwd: honey.path })
     .then(() =>
-      git(`commit -m "${honey.commit.message}"`, { cwd: honey.path }))
+      git(`commit -m "${honey.commit ? honey.commit.message : 'buzz buzz buzz'}"`, { cwd: honey.path }))
     .then(() =>
       git('push origin', { cwd: honey.path }))
-    .then(() => honey, () => honey);
+    .then(() => honey, (...args) => console.log(args) || honey);
 }
 
 export function cloneFromUpstream(honey) {
@@ -167,7 +167,7 @@ export function init({ id, mongoose }) {
       if (!committer[honey.id]) {
         committer[honey.id] = setInterval(() => {
           changeUpstream(honey);
-        }, honey.interval * 60000);
+        }, (honey.interval || 1) * 60000);
       }
       return ({
         honey: {

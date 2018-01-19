@@ -43,6 +43,7 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jest": "^21.6.1",
     "jest": "^22.0.4",
-    "npm-watch": "^0.3.0"
+    "npm-watch": "^0.3.0",
+    "supertest": "^3.0.0"
   }
 }

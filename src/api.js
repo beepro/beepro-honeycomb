@@ -7,7 +7,7 @@ if (!SECRET) {
   throw Error('BEEPRO_HASH_SECRET have to be set in environment variable');
 }
 
-export function validate({ git = {} }) {
+export function validate({ git = {} } = {}) {
   if (
     !git.url
   ) {
@@ -16,16 +16,16 @@ export function validate({ git = {} }) {
   return true;
 }
 
-export function issueId({ git: { url, branch = 'master', token } }) {
+export function issueId({ git: { url, branch = 'master' } = {} } = {}) {
   return crypto
     .createHmac('sha256', SECRET)
-    .update(`${url}:${branch}:${token}`)
+    .update(`${url}:${branch}`)
     .digest('hex');
 }
 
 export default function (app, mongoose) {
   app.post('/api/honeys', (req, res) => {
-    if (validate(req.body)) {
+    if (!validate(req.body)) {
       res.status(400).json({
         errors: [
           {
@@ -44,7 +44,7 @@ export default function (app, mongoose) {
       commit: {},
       ...req.body,
     }).then(({ dance: { url } }) => {
-      res.json({
+      res.status(201).json({
         dance: {
           url,
         },
@@ -59,7 +59,6 @@ export default function (app, mongoose) {
     }).then((honey) => {
       if (honey) {
         res.json({
-          id: honey.id,
           git: {
             url: honey.git.url,
             branch: honey.git.branch,
