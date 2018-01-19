@@ -101,13 +101,15 @@ export function dance({
 }
 
 export function changeUpstream(honey) {
+  const message = honey.commit && honey.commit.message ? honey.commit.message : 'buzz buzz buzz';
   // eslint-disable-next-line no-console
   console.log(`change upstream on ${honey.path}`);
   return git('add .', { cwd: honey.path })
     .then(() =>
-      git(`commit -m "${honey.commit ? honey.commit.message : 'buzz buzz buzz'}"`, { cwd: honey.path }))
+      git(`commit -m "${message}"`, { cwd: honey.path }))
     .then(() =>
       git('push origin', { cwd: honey.path }))
+    // eslint-disable-next-line no-console
     .then(() => honey, (...args) => console.log(args) || honey);
 }
 
@@ -165,9 +167,10 @@ export function init({ id, mongoose }) {
     })
     .then((honey) => {
       if (!committer[honey.id]) {
+        const interval = honey.commit && honey.commit.interval ? honey.commit.interval : 1;
         committer[honey.id] = setInterval(() => {
           changeUpstream(honey);
-        }, (honey.interval || 1) * 60000);
+        }, interval * 60000);
       }
       return ({
         honey: {
