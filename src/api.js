@@ -41,6 +41,7 @@ export default function (app, mongoose) {
     create({
       mongoose,
       id,
+      commit: {},
       ...req.body,
     }).then(({ dance: { url } }) => {
       res.json({
