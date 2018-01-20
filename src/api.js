@@ -29,7 +29,7 @@ export default function (app, mongoose) {
       res.status(400).json({
         errors: [
           {
-            msg: 'git, account, token are required',
+            msg: 'git.url are required',
           },
         ],
       });
