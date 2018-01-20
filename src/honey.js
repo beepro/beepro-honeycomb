@@ -122,7 +122,7 @@ export function dance({
       file = path.join(honey.path, relativePath);
     }
     if (type === 'create') {
-      fs.writeFileSync(file, contents, 'utf8');
+      fs.outputFileSync(file, contents, 'utf8');
     }
     if (type === 'delete' && fs.existsSync(file)) {
       fs.removeSync(file);
