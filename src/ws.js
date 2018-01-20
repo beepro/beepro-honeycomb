@@ -43,7 +43,7 @@ export default function (app, mongoose) {
           data: JSON.parse(msg),
         })
           .then(() => {
-            multicast(clients, msg, ws.id);
+            multicast(clients, msg, ws);
           });
       });
       dance({
