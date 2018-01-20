@@ -89,10 +89,10 @@ export function dance({
     if (type === 'create') {
       fs.writeFileSync(file, contents, 'utf8');
     }
-    if (type === 'delete') {
+    if (type === 'delete' && fs.existsSync(file)) {
       fs.removeSync(file);
     }
-    if (type === 'change') {
+    if (type === 'change' && fs.existsSync(file)) {
       const origin = fs.readFileSync(file, 'utf8');
       fs.writeFileSync(file, waggleDance.apply(origin, change), 'utf8');
     }
