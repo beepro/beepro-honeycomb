@@ -12,7 +12,7 @@ import {
 } from '../honey';
 import util from './util';
 
-jest.setTimeout(10000);
+jest.setTimeout(30000);
 const id = 'beepro-test';
 const honeyPath = path.join(process.cwd(), 'workspace', id);
 const gitPath = path.join(honeyPath, '.git');

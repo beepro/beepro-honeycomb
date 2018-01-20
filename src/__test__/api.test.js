@@ -7,7 +7,7 @@ import request from 'supertest';
 import api, { issueId, validate } from '../api';
 import util from './util';
 
-jest.setTimeout(10000);
+jest.setTimeout(30000);
 const id = '8a5aefd9954e8b73811501761f6981b764b7375f4dbe8d5d5ef3f9af6b15db49';
 
 beforeAll(() =>
