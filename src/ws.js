@@ -27,11 +27,10 @@ export default function (app, mongoose) {
     if (!honeys[req.params.id]) {
       honeys[req.params.id] = [];
     }
-    let clients = honeys[req.params.id];
-    clients.push(ws);
+    honeys[req.params.id].push(ws);
     ws.on('close', () => {
       // eslint-disable-next-line no-param-reassign
-      clients = honeys[req.params.id].filter(client => client.id !== ws.id);
+      honeys[req.params.id] = honeys[req.params.id].filter(client => client.id !== ws.id);
     });
     init({
       id: req.params.id,
@@ -43,7 +42,7 @@ export default function (app, mongoose) {
           data: JSON.parse(msg),
         })
           .then(() => {
-            multicast(clients, msg, ws);
+            multicast(honeys[req.params.id], msg, ws);
           });
       });
       dance({
