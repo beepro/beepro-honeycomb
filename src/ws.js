@@ -17,6 +17,8 @@ export default function (app, mongoose) {
   };
 
   app.ws('/ws/honeys/:id', (ws, req) => {
+    // eslint-disable-next-line no-console
+    console.log('connected!');
     if (!honeys[req.params.id]) {
       honeys[req.params.id] = [];
     }
