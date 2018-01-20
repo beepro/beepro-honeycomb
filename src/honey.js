@@ -33,6 +33,27 @@ export function getModel(mongoose) {
   return model;
 }
 
+export function find({
+  mongoose,
+  id,
+}) {
+  const Model = getModel(mongoose);
+  return Model.findOne({
+    id,
+  }).then(doc => (doc ? doc.toObject() : null));
+}
+
+export function update({
+  mongoose,
+  id,
+  honey,
+}) {
+  const Model = getModel(mongoose);
+  return Model.findOneAndUpdate({
+    id,
+  }, honey).then(doc => (doc ? doc.toObject() : null));
+}
+
 export function create({
   mongoose,
   id,
@@ -45,31 +66,33 @@ export function create({
     interval,
   } = {},
 }) {
-  const Model = getModel(mongoose);
-  return new Model({
+  return find({
+    mongoose,
     id,
-    git: {
-      url: gitUrl,
-      branch,
-    },
-    commit: {
-      message,
-      interval,
-    },
-    dance: {
-      url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
-    },
-  }).save().then(doc => (doc ? doc.toObject() : {}));
-}
-
-export function find({
-  mongoose,
-  id,
-}) {
-  const Model = getModel(mongoose);
-  return Model.findOne({
-    id,
-  }).then(doc => (doc ? doc.toObject() : {}));
+  }).then((honey) => {
+    if (honey) {
+      return update({
+        mongoose,
+        id,
+        honey,
+      });
+    }
+    const Model = getModel(mongoose);
+    return new Model({
+      id,
+      git: {
+        url: gitUrl,
+        branch,
+      },
+      commit: {
+        message,
+        interval,
+      },
+      dance: {
+        url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
+      },
+    }).save().then(doc => (doc ? doc.toObject() : null));
+  });
 }
 
 export function dance({

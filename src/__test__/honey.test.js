@@ -67,7 +67,7 @@ test('cloneFromUpstream, changeUpstream, makeRC', () =>
       expect(fs.existsSync(path.join(honeyPath, '.beerc'))).toBe(true);
     }));
 
-test('create, find, init, dance', () =>
+test('create, find, init, dance, update', () =>
   create({
     mongoose,
     ...inputs.valid,
