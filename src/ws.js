@@ -6,7 +6,7 @@ export default function (app, mongoose) {
     const json = JSON.stringify(data);
     ws.send(json);
     // eslint-disable-next-line no-console
-    console.log(`from:${from} to:${ws.id} data:${json}`);
+    console.log(`from:${from.id} to:${ws.id} data:${json}`);
   };
 
   const honeys = {};

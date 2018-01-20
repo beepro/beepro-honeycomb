@@ -38,7 +38,7 @@ const honeys = {
       interval: 1,
     },
     dance: {
-      url: 'wss://honeycomb-v1.herokuapp.com/ws/honeys/beepro-test',
+      url: 'ws://localhost:5432/ws/honeys/beepro-test',
     },
   },
 };

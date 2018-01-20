@@ -13,6 +13,18 @@ const nabee = {
   token: process.env.BEEPRO_TOKEN,
 };
 
+function wsUrl() {
+  const host = process.env.GLOBAL_HOST || 'localhost';
+  const port = process.env.GLOBAL_PORT || '5432';
+  let protocol;
+  if (port === '443') {
+    protocol = 'wss';
+  } else {
+    protocol = 'ws';
+  }
+  return `${protocol}://${host}${port !== '443' && port !== '80' ? `:${port}` : ''}`;
+}
+
 export function getModel(mongoose) {
   if (!model) {
     model = mongoose.model('Honey', {
@@ -89,7 +101,7 @@ export function create({
         interval,
       },
       dance: {
-        url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
+        url: `${wsUrl()}/ws/honeys/${id}`,
       },
     }).save().then(doc => (doc ? doc.toObject() : null));
   });
