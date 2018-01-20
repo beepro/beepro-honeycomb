@@ -1,3 +1,4 @@
+import uuid from 'uuid';
 import { init } from './honey';
 
 export default function (app, mongoose) {
@@ -12,18 +13,26 @@ export default function (app, mongoose) {
 
   const multicast = (clients, msg, from) => {
     clients.forEach((ws) => {
-      send(ws, from, msg);
+      if (from.id !== ws.id) {
+        send(ws, from, msg);
+      }
     });
   };
 
   app.ws('/ws/honeys/:id', (ws, req) => {
+    // eslint-disable-next-line no-param-reassign
+    ws.id = uuid.v4();
     // eslint-disable-next-line no-console
     console.log('connected!');
     if (!honeys[req.params.id]) {
       honeys[req.params.id] = [];
     }
-    const clients = honeys[req.params.id];
+    let clients = honeys[req.params.id];
     clients.push(ws);
+    ws.on('close', () => {
+      // eslint-disable-next-line no-param-reassign
+      clients = honeys[req.params.id].filter(client => client.id !== ws.id);
+    });
     init({
       id: req.params.id,
       mongoose,
