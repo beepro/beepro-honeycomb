@@ -49,7 +49,7 @@ export default function (app, mongoose) {
           data: json,
         })
           .then(() => {
-            multicast(honeys[req.params.id], msg, ws);
+            multicast(honeys[req.params.id], json, ws);
           });
       });
       dance({
@@ -61,6 +61,8 @@ export default function (app, mongoose) {
           contents: honey.rc,
         },
       });
+    }, () => {
+      ws.send('{"error": "honey does not exists"}');
     });
   });
 }
