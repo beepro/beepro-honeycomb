@@ -37,9 +37,16 @@ export default function (app, mongoose) {
       mongoose,
     }).then(({ honey, dance }) => {
       ws.on('message', (msg) => {
+        let json = {};
+        try {
+          json = JSON.parse(msg);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        }
         dance({
           honey,
-          data: JSON.parse(msg),
+          data: json,
         })
           .then(() => {
             multicast(honeys[req.params.id], msg, ws);
