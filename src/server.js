@@ -1,4 +1,4 @@
-import Express from 'express';
+import express from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -12,8 +12,7 @@ mongoose.connect(process.env.BEEPRO_MONGO_URL || 'mongodb://localhost:27017', {
 });
 mongoose.Promise = global.Promise;
 
-const app = new Express();
-expressWs(app);
+const { app } = expressWs(express());
 
 app.use(compression());
 app.use(cookieParser());
