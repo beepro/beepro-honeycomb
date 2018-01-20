@@ -1,24 +1,47 @@
 import uuid from 'uuid';
 import { init } from './honey';
 
+
+const honeys = {};
+const queue = {};
+
+export function send(ws, from, data) {
+  const json = JSON.stringify(data);
+  ws.send(json);
+  // eslint-disable-next-line no-console
+  console.log(`from:${from.id} to:${ws.id} data:${json}`);
+}
+
+export function suspendcast(ws) {
+  // eslint-disable-next-line no-console
+  console.log(`suspend sending to:${ws.id}`);
+  if (queue[ws.id]) {
+    return;
+  }
+  queue[ws.id] = [];
+}
+
+export function resumecast(ws) {
+  // eslint-disable-next-line no-console
+  console.log(`resume sending to:${ws.id}`);
+  if (!queue[ws.id]) {
+    return;
+  }
+  queue[ws.id].forEach(msg => send(ws, {}, msg));
+  queue[ws.id] = null;
+}
+
+export function multicast(clients, msg, from) {
+  clients.forEach((ws) => {
+    if (queue[ws.id]) {
+      queue[ws.id].push(msg);
+    } else if (from.id !== ws.id) {
+      send(ws, from, msg);
+    }
+  });
+}
+
 export default function (app, mongoose) {
-  const send = (ws, from, data) => {
-    const json = JSON.stringify(data);
-    ws.send(json);
-    // eslint-disable-next-line no-console
-    console.log(`from:${from.id} to:${ws.id} data:${json}`);
-  };
-
-  const honeys = {};
-
-  const multicast = (clients, msg, from) => {
-    clients.forEach((ws) => {
-      if (from.id !== ws.id) {
-        send(ws, from, msg);
-      }
-    });
-  };
-
   app.ws('/ws/honeys/:id', (ws, req) => {
     // eslint-disable-next-line no-param-reassign
     ws.id = uuid.v4();
@@ -44,7 +67,14 @@ export default function (app, mongoose) {
           // eslint-disable-next-line no-console
           console.log(e);
         }
+        if (json.type === 'suspend') {
+          suspendcast(ws);
+        }
+        if (json.type === 'resume') {
+          resumecast(ws);
+        }
         dance({
+          from: ws,
           honey,
           data: json,
         })
