@@ -45,6 +45,7 @@ export default function (app, mongoose) {
       ...req.body,
     }).then(({ dance: { url } }) => {
       res.status(201).json({
+        id,
         dance: {
           url,
         },

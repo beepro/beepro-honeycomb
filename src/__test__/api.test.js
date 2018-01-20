@@ -69,6 +69,7 @@ test('honey resource', () => {
     .expect(201)
     .then((res) => {
       expect(res.body).toEqual({
+        id: '8a5aefd9954e8b73811501761f6981b764b7375f4dbe8d5d5ef3f9af6b15db49',
         dance: {
           url: 'wss://honeycomb-v1.herokuapp.com/ws/honeys/8a5aefd9954e8b73811501761f6981b764b7375f4dbe8d5d5ef3f9af6b15db49',
         },

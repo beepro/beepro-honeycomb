@@ -59,7 +59,7 @@ export function create({
     dance: {
       url: `wss://honeycomb-v1.herokuapp.com/ws/honeys/${id}`,
     },
-  }).save().then(doc => doc.toObject());
+  }).save().then(doc => (doc ? doc.toObject() : {}));
 }
 
 export function find({
@@ -69,7 +69,7 @@ export function find({
   const Model = getModel(mongoose);
   return Model.findOne({
     id,
-  }).then(doc => doc.toObject());
+  }).then(doc => (doc ? doc.toObject() : {}));
 }
 
 export function dance({

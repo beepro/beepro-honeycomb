@@ -22,4 +22,4 @@ app.use(bodyParser.urlencoded({ extended: false }));
 api(app, mongoose);
 ws(app, mongoose);
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 5432);
