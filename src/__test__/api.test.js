@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import request from 'supertest';
+import fs from 'fs-extra';
+import path from 'path';
 import api, { issueId, validate } from '../api';
 import util from './util';
 
@@ -69,7 +71,7 @@ test('honey resource', () => {
     .expect(201)
     .then((res) => {
       expect(res.body).toEqual({
-        id: '8a5aefd9954e8b73811501761f6981b764b7375f4dbe8d5d5ef3f9af6b15db49',
+        id,
         dance: {
           url: 'ws://localhost:5432/ws/honeys/8a5aefd9954e8b73811501761f6981b764b7375f4dbe8d5d5ef3f9af6b15db49',
         },
@@ -91,6 +93,26 @@ test('honey resource', () => {
           url: `ws://localhost:5432/ws/honeys/${id}`,
         },
       });
+    })
+    .then(() => {
+      // prepare for test
+      fs.mkdirSync(path.join(__dirname, '../../workspace', id));
+    })
+    .then(() =>
+      request(app)
+        .post(`/api/honeys/${id}/files/aaa/beepro.png`)
+        .attach('file', 'src/__test__/beepro.png')
+        .expect(200))
+    .then(() => {
+      expect(fs.existsSync(`workspace/${id}/aaa/beepro.png`)).toBe(true);
+    })
+    .then(() =>
+      request(app)
+        .delete(`/api/honeys/${id}/files/aaa/beepro.png`)
+        .send()
+        .expect(200))
+    .then(() => {
+      expect(fs.existsSync(`workspace/${id}/aaa/beepro.png`)).toBe(false);
     });
 });
 

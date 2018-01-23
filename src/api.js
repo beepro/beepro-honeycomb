@@ -1,7 +1,11 @@
 import crypto from 'crypto';
+import multer from 'multer';
+import fs from 'fs-extra';
+import path from 'path';
 import { create, find } from './honey';
 
 const SECRET = process.env.BEEPRO_HASH_SECRET;
+const upload = multer({ dest: 'uploads/' });
 
 if (!SECRET) {
   throw Error('BEEPRO_HASH_SECRET have to be set in environment variable');
@@ -72,6 +76,25 @@ export default function (app, mongoose) {
         res.status(404).json({});
       }
     });
+  });
+  app.use('/api/honeys/:id/files/', upload.single('file'), (req, res) => {
+    const relativePath = req.originalUrl.replace(`/api/honeys/${req.params.id}/files/`, '');
+    const honeyPath = path.join(__dirname, '../workspace', req.params.id);
+    if (
+      req.params.id.match('\\.\\./') ||
+      relativePath.match('\\.\\./') ||
+      !fs.existsSync(honeyPath)
+    ) {
+      res.status(400).send('');
+      return;
+    }
+    const to = path.join(honeyPath, relativePath);
+    if (req.method === 'POST') {
+      fs.moveSync(req.file.path, to, { overwrite: true });
+    } else if (req.method === 'DELETE') {
+      fs.removeSync(to);
+    }
+    res.send('');
   });
   return app;
 }

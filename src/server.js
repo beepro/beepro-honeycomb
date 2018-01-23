@@ -22,4 +22,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 api(app, mongoose);
 ws(app, mongoose);
 
+app.get('/', (req, res) => {
+  res.send('<html><body><form enctype="multipart/form-data" action="/api/honeys/hoge/files/aaa/bbb.txt" method="POST" ><input type="file" name="file" ><input type="submit"></form><form method="DELETE" action="/api/honeys/hoge/files/aaa/bbb.png"><input type="submit"></form></body></html>');
+});
+
 app.listen(process.env.PORT || 5432);
