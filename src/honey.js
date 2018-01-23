@@ -111,6 +111,7 @@ export function dance({
   honey,
   data: {
     path: relativePath,
+    to,
     type,
     contents,
     change,
@@ -118,14 +119,21 @@ export function dance({
 }) {
   return new Promise((resolve) => {
     let file;
+    let fileTo;
     if (relativePath) {
       file = path.join(honey.path, relativePath);
+    }
+    if (to) {
+      fileTo = path.join(honey.path, to);
     }
     if (type === 'create') {
       fs.outputFileSync(file, contents, 'utf8');
     }
     if (type === 'delete' && fs.existsSync(file)) {
       fs.removeSync(file);
+    }
+    if (type === 'move' && fs.existsSync(file)) {
+      fs.moveSync(file, fileTo);
     }
     if (type === 'change' && fs.existsSync(file)) {
       const origin = fs.readFileSync(file, 'utf8');

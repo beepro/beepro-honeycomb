@@ -140,6 +140,30 @@ test('create, find, init, dance, update', () =>
         },
       });
       expect(fs.readFileSync(helloPath, 'utf8')).toBe('aaa\nbbb');
+      const movedPath = `${helloPath}ttt`;
+      const movedRelativePath = path.relative(honeyPath, movedPath);
+      dance({
+        honey,
+        data: {
+          type: 'move',
+          who: 'beepro-nabee',
+          path: relativePath,
+          to: movedRelativePath,
+        },
+      });
+      expect(fs.existsSync(helloPath)).toBe(false);
+      expect(fs.existsSync(movedPath)).toBe(true);
+      dance({
+        honey,
+        data: {
+          type: 'move',
+          who: 'beepro-nabee',
+          path: movedRelativePath,
+          to: relativePath,
+        },
+      });
+      expect(fs.existsSync(helloPath)).toBe(true);
+      expect(fs.existsSync(movedPath)).toBe(false);
       dance({
         honey,
         data: {
