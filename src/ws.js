@@ -33,10 +33,12 @@ export function resumecast(ws) {
 
 export function multicast(clients, msg, from) {
   clients.forEach((ws) => {
-    if (queue[ws.id]) {
-      queue[ws.id].push(msg);
-    } else if (from.id !== ws.id) {
-      send(ws, from, msg);
+    if (from.id !== ws.id) {
+      if (queue[ws.id]) {
+        queue[ws.id].push(msg);
+      } else {
+        send(ws, from, msg);
+      }
     }
   });
 }
