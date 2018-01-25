@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import { init } from './honey';
+import { init, changeUpstream } from './honey';
 
 
 const honeys = {};
@@ -47,6 +47,7 @@ export default function (app, mongoose) {
     ws.id = uuid.v4();
     // eslint-disable-next-line no-console
     console.log('connected!');
+    suspendcast(ws);
     if (!honeys[req.params.id]) {
       honeys[req.params.id] = [];
     }
@@ -67,11 +68,9 @@ export default function (app, mongoose) {
           // eslint-disable-next-line no-console
           console.log(e);
         }
-        if (json.type === 'suspend') {
-          suspendcast(ws);
-        }
         if (json.type === 'resume') {
           resumecast(ws);
+          return;
         }
         dance({
           from: ws,
@@ -91,6 +90,11 @@ export default function (app, mongoose) {
           contents: honey.rc,
         },
       });
+      changeUpstream(honey)
+        .then(() =>
+          send(ws, ws, {
+            type: 'sync',
+          }));
     }, () => {
       ws.send('{"error": "honey does not exists"}');
     });

@@ -91,8 +91,6 @@ export default function (app, mongoose) {
     const to = path.join(honeyPath, relativePath);
     if (req.method === 'POST') {
       fs.moveSync(req.file.path, to, { overwrite: true });
-    } else if (req.method === 'DELETE') {
-      fs.removeSync(to);
     }
     res.send('');
   });

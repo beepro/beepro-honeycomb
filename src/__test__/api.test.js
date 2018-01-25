@@ -105,14 +105,6 @@ test('honey resource', () => {
         .expect(200))
     .then(() => {
       expect(fs.existsSync(`workspace/${id}/aaa/beepro.png`)).toBe(true);
-    })
-    .then(() =>
-      request(app)
-        .delete(`/api/honeys/${id}/files/aaa/beepro.png`)
-        .send()
-        .expect(200))
-    .then(() => {
-      expect(fs.existsSync(`workspace/${id}/aaa/beepro.png`)).toBe(false);
     });
 });
 
