@@ -87,7 +87,7 @@ export default function (app, mongoose) {
           type: 'create',
           who: 'beepro',
           path: '.beerc',
-          contents: honey.rc,
+          contents: JSON.stringify(honey.rc),
         },
       });
       changeUpstream(honey)
