@@ -149,9 +149,15 @@ export function changeUpstream(honey) {
   console.log(`change upstream on ${honey.path}`);
   return git('add .', { cwd: honey.path })
     .then(() =>
-      git(`commit -m "${message}"`, { cwd: honey.path }))
-    .then(() =>
-      git('push origin', { cwd: honey.path }))
+      git('status -s', { cwd: honey.path }))
+    .then(res => (
+      res ?
+        git(`commit -m "${message}"`, { cwd: honey.path })
+          .then(() =>
+            git('push origin', { cwd: honey.path }))
+        :
+        Promise.resolve()
+    ))
     // eslint-disable-next-line no-console
     .then(() => honey, (...args) => console.log(args) || honey);
 }
