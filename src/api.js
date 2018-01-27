@@ -78,6 +78,7 @@ export default function (app, mongoose) {
     });
   });
   app.use('/api/honeys/:id/files/', upload.single('file'), (req, res) => {
+    console.log(req);
     const relativePath = req.originalUrl.replace(`/api/honeys/${req.params.id}/files/`, '');
     const honeyPath = path.join(__dirname, '../workspace', req.params.id);
     if (
