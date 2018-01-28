@@ -78,19 +78,18 @@ export default function (app, mongoose) {
     });
   });
   app.use('/api/honeys/:id/files/', upload.single('file'), (req, res) => {
-    console.log(req);
     const relativePath = req.originalUrl.replace(`/api/honeys/${req.params.id}/files/`, '');
     const honeyPath = path.join(__dirname, '../workspace', req.params.id);
     if (
       req.params.id.match('\\.\\./') ||
-      relativePath.match('\\.\\./') ||
-      !fs.existsSync(honeyPath)
+      relativePath.match('\\.\\./')
     ) {
       res.status(400).send('');
       return;
     }
     const to = path.join(honeyPath, relativePath);
     if (req.method === 'POST') {
+      fs.ensureDirSync(path.dirname(to));
       fs.moveSync(req.file.path, to, { overwrite: true });
     }
     res.send('');
