@@ -69,6 +69,7 @@ export default function (app, mongoose) {
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
+          return;
         }
         if (json.type === 'resume') {
           resumecast(ws);
