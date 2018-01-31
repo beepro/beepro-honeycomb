@@ -43,6 +43,13 @@ export function multicast(clients, msg, from, withoutSender = true) {
   });
 }
 
+export function memberscast({ ws, members }) {
+  multicast(ws, {
+    type: 'members',
+    members: Object.values(members),
+  }, ws, false);
+}
+
 export default function (app, mongoose) {
   app.ws('/ws/honeys/:id', (ws, req) => {
     // eslint-disable-next-line no-param-reassign
@@ -60,6 +67,8 @@ export default function (app, mongoose) {
     ws.on('close', () => {
       // eslint-disable-next-line no-param-reassign
       honeys[req.params.id].ws = honeys[req.params.id].ws.filter(client => client.id !== ws.id);
+      delete honeys[req.params.id].members[ws.id];
+      memberscast(honeys[req.params.id]);
     });
     init({
       id: req.params.id,
@@ -80,10 +89,7 @@ export default function (app, mongoose) {
         }
         if (json.type === 'join') {
           honeys[req.params.id].members[ws.id] = json.user;
-          multicast(honeys[req.params.id].ws, {
-            type: 'members',
-            members: Object.values(honeys[req.params.id].members),
-          }, ws, false);
+          memberscast(honeys[req.params.id]);
           return;
         }
         dance({
