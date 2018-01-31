@@ -31,9 +31,9 @@ export function resumecast(ws) {
   queue[ws.id] = null;
 }
 
-export function multicast(clients, msg, from) {
+export function multicast(clients, msg, from, withoutSender = true) {
   clients.forEach((ws) => {
-    if (from.id !== ws.id) {
+    if (!withoutSender || from.id !== ws.id) {
       if (queue[ws.id]) {
         queue[ws.id].push(msg);
       } else {
@@ -51,12 +51,15 @@ export default function (app, mongoose) {
     console.log('connected!');
     suspendcast(ws);
     if (!honeys[req.params.id]) {
-      honeys[req.params.id] = [];
+      honeys[req.params.id] = {
+        ws: [],
+        members: {},
+      };
     }
-    honeys[req.params.id].push(ws);
+    honeys[req.params.id].ws.push(ws);
     ws.on('close', () => {
       // eslint-disable-next-line no-param-reassign
-      honeys[req.params.id] = honeys[req.params.id].filter(client => client.id !== ws.id);
+      honeys[req.params.id].ws = honeys[req.params.id].ws.filter(client => client.id !== ws.id);
     });
     init({
       id: req.params.id,
@@ -75,13 +78,25 @@ export default function (app, mongoose) {
           resumecast(ws);
           return;
         }
+        if (json.type === 'join') {
+          honeys[req.params.id].members[ws.id] = json.user;
+          multicast(honeys[req.params.id].ws, {
+            type: 'members',
+            members: Object.values(honeys[req.params.id].members),
+          }, ws, false);
+          return;
+        }
         dance({
           from: ws,
           honey,
           data: json,
         })
           .then(() => {
-            multicast(honeys[req.params.id], json, ws);
+            const member = honeys[req.params.id].members[ws.id];
+            multicast(honeys[req.params.id].ws, {
+              ...json,
+              who: member ? member.id : 'unknown',
+            }, ws, true);
           });
       });
       dance({

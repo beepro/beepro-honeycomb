@@ -117,7 +117,6 @@ export function dance({
     change,
   },
 }) {
-  console.log(relativePath, type, change);
   return new Promise((resolve) => {
     let file;
     let fileTo;
