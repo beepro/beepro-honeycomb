@@ -4,12 +4,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { create, find } from './honey';
 
-const SECRET = process.env.BEEPRO_HASH_SECRET;
+const SECRET = process.env.BEEPRO_HASH_SECRET || 'AWESOME BEEPRO';
 const upload = multer({ dest: 'uploads/' });
-
-if (!SECRET) {
-  throw Error('BEEPRO_HASH_SECRET have to be set in environment variable');
-}
 
 export function validate({ git = {} } = {}) {
   if (
