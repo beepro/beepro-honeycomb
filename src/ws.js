@@ -1,7 +1,6 @@
 import uuid from 'uuid';
 import { init, changeUpstream } from './honey';
 
-
 const honeys = {};
 const queue = {};
 
@@ -44,10 +43,15 @@ export function multicast(clients, msg, from, withoutSender = true) {
 }
 
 export function memberscast({ ws, members }) {
-  multicast(ws, {
-    type: 'members',
-    members: Object.values(members),
-  }, ws, false);
+  multicast(
+    ws,
+    {
+      type: 'members',
+      members: Object.values(members),
+    },
+    ws,
+    false,
+  );
 }
 
 export default function (app, mongoose) {
@@ -73,54 +77,61 @@ export default function (app, mongoose) {
     init({
       id: req.params.id,
       mongoose,
-    }).then(({ honey, dance }) => {
-      ws.on('message', (msg) => {
-        let json = {};
-        try {
-          json = JSON.parse(msg);
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-          return;
-        }
-        if (json.type === 'resume') {
-          resumecast(ws);
-          return;
-        }
-        if (json.type === 'join') {
-          honeys[req.params.id].members[ws.id] = json.user;
-          memberscast(honeys[req.params.id]);
-          return;
-        }
-        dance({
-          from: ws,
-          honey,
-          data: json,
-        })
-          .then(() => {
+    }).then(
+      ({ honey, dance }) => {
+        ws.on('message', (msg) => {
+          let json = {};
+          try {
+            json = JSON.parse(msg);
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.log(e);
+            return;
+          }
+          if (json.type === 'resume') {
+            resumecast(ws);
+            return;
+          }
+          if (json.type === 'join') {
+            honeys[req.params.id].members[ws.id] = json.user;
+            memberscast(honeys[req.params.id]);
+            return;
+          }
+          dance({
+            from: ws,
+            honey,
+            data: json,
+          }).then(() => {
             const member = honeys[req.params.id].members[ws.id];
-            multicast(honeys[req.params.id].ws, {
-              ...json,
-              who: member ? member.id : 'unknown',
-            }, ws, true);
+            multicast(
+              honeys[req.params.id].ws,
+              {
+                ...json,
+                who: member ? member.id : 'unknown',
+              },
+              ws,
+              true,
+            );
           });
-      });
-      dance({
-        honey,
-        data: {
-          type: 'create',
-          who: 'beepro',
-          path: '.beerc',
-          contents: JSON.stringify(honey.rc),
-        },
-      });
-      changeUpstream(honey)
-        .then(() =>
+        });
+        dance({
+          honey,
+          data: {
+            type: 'create',
+            who: 'beepro',
+            path: '.beerc',
+            contents: JSON.stringify(honey.rc),
+          },
+        });
+        changeUpstream(honey).then(() =>
           send(ws, ws, {
             type: 'sync',
           }));
-    }, () => {
-      ws.send('{"error": "honey does not exists"}');
-    });
+      },
+      (error) => {
+        console.error(error);
+        ws.send('{"error": "honey does not exists"}');
+      },
+    );
   });
 }
